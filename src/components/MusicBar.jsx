@@ -1,16 +1,38 @@
 import { useState, useRef, useEffect } from 'react'
 
+const MUSIC_STORAGE_KEY = 'sweepingsim-music'
+
 // Local file + SoundHelix (royalty-free). Add your own MP3s to public/audio/
 const PLAYLIST = [
-  { title: 'Demo', url: '/audio/demo.mp3' },
+  { title: 'Spring', url: '/audio/spring.mp3' },
   { title: 'Summer', url: '/audio/summer.mp3' },
   { title: 'Autumn', url: '/audio/autumn.mp3' },
   { title: 'Winter', url: '/audio/winter.mp3' },
 ]
 
+function loadMusicPrefs() {
+  try {
+    const raw = localStorage.getItem(MUSIC_STORAGE_KEY)
+    if (!raw) return { index: 0, playing: false }
+    const { index, playing } = JSON.parse(raw)
+    const i = Math.max(0, Math.min(index, PLAYLIST.length - 1))
+    return { index: i, playing: !!playing }
+  } catch {
+    return { index: 0, playing: false }
+  }
+}
+
+function saveMusicPrefs(index, playing) {
+  try {
+    localStorage.setItem(MUSIC_STORAGE_KEY, JSON.stringify({ index, playing }))
+  } catch {
+    // ignore
+  }
+}
+
 export default function MusicBar() {
-  const [currentIndex, setCurrentIndex] = useState(0)
-  const [isPlaying, setIsPlaying] = useState(false)
+  const [currentIndex, setCurrentIndex] = useState(() => loadMusicPrefs().index)
+  const [isPlaying, setIsPlaying] = useState(() => loadMusicPrefs().playing)
   const [error, setError] = useState(null)
   const audioRef = useRef(null)
 
@@ -38,6 +60,10 @@ export default function MusicBar() {
       audio.removeEventListener('canplay', handleCanPlay)
     }
   }, [])
+
+  useEffect(() => {
+    saveMusicPrefs(currentIndex, isPlaying)
+  }, [currentIndex, isPlaying])
 
   useEffect(() => {
     const audio = audioRef.current
