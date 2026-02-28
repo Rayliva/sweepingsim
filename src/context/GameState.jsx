@@ -1,4 +1,6 @@
-import { createContext, useContext, useReducer, useCallback } from 'react'
+import { createContext, useContext, useReducer, useCallback, useEffect } from 'react'
+
+const STORAGE_KEY = 'sweepingsim-game'
 
 const initialState = {
   currency: 0,
@@ -12,6 +14,25 @@ const initialState = {
     broomSpeed: 30,
     trashSpawnRate: 35,
   },
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    if (!raw) return initialState
+    const saved = JSON.parse(raw)
+    return { ...initialState, ...saved }
+  } catch {
+    return initialState
+  }
+}
+
+function saveState(state) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
+  } catch {
+    // ignore quota / privacy mode
+  }
 }
 
 function reducer(state, action) {
@@ -39,7 +60,11 @@ function reducer(state, action) {
 const GameStateContext = createContext(null)
 
 export function GameStateProvider({ children }) {
-  const [state, dispatch] = useReducer(reducer, initialState)
+  const [state, dispatch] = useReducer(reducer, initialState, loadState)
+
+  useEffect(() => {
+    saveState(state)
+  }, [state])
 
   const addCurrency = useCallback((amount) => {
     dispatch({ type: 'ADD_CURRENCY', payload: amount })
