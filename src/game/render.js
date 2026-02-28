@@ -137,13 +137,24 @@ export function drawBroom(ctx, broom) {
   ctx.restore()
 }
 
-export function drawTrash(ctx, trash) {
-  const { x, y, radius, rotation, shape = 0, colorKey = 0 } = trash
+export function drawTrash(ctx, trash, grassImage = null) {
+  const { x, y, radius, rotation, shape = 0, colorKey = 0, type } = trash
   ctx.save()
   ctx.translate(x, y)
   ctx.rotate(rotation)
-  ctx.strokeStyle = PALETTE.outline
-  ctx.lineWidth = 2
-  drawLeaf(ctx, radius, shape, colorKey, jitter)
+
+  if (type === 'grassBlade' && grassImage && grassImage.complete && grassImage.naturalWidth > 0) {
+    const size = 32
+    ctx.drawImage(
+      grassImage,
+      0, 0, grassImage.naturalWidth, grassImage.naturalHeight,
+      -size / 2, -size / 2, size, size
+    )
+  } else {
+    ctx.strokeStyle = PALETTE.outline
+    ctx.lineWidth = 2
+    drawLeaf(ctx, radius, shape, colorKey, jitter)
+  }
+
   ctx.restore()
 }

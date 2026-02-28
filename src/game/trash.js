@@ -30,7 +30,7 @@ export function updateTrash(trash, width, height, time = 0) {
     trash.vx *= BASE.GROUND_FRICTION
   } else {
     trash.vy += BASE.GRAVITY
-    if (trash.type === 'leaf') {
+    if (trash.type === 'leaf' || trash.type === 'grassBlade') {
       const sway = Math.sin((trash.swayPhase || 0) + time * BASE.LEAF_SWAY_FREQ) * BASE.LEAF_SWAY_AMP
       trash.vx = (trash.baseDrift ?? trash.vx) + sway
     }
