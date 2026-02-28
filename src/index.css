@@ -1,0 +1,327 @@
+/* Sweepingsim — Cozy minimal palette & sketchy feel */
+
+:root {
+  /* Soft muted urban palette */
+  --bg-main: #e8e4df;
+  --bg-panel: #d4cfc8;
+  --concrete: #9a9a94;
+  --concrete-light: #b5b2ac;
+  --brick: #b87d6a;
+  --brick-soft: #c99a8a;
+  --outline: #2a2522;
+  --outline-soft: #4a4542;
+  --accent-warm: #8b7355;
+  --text: #2a2522;
+  --text-muted: #5c5652;
+  --currency: #6b8f71;
+
+  /* Sketchy borders — uneven radius for hand-drawn feel */
+  --radius-sketch: 3px 7px 4px 6px;
+  --radius-panel: 8px 12px 6px 10px;
+  --radius-btn: 4px 9px 5px 7px;
+
+  /* Cozy transitions */
+  --ease-cozy: cubic-bezier(0.33, 1, 0.68, 1);
+  --ease-soft: cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-ui: 0.25s var(--ease-cozy);
+}
+
+/* Hand-drawn / sketchy filter for SVG or box shadows */
+.filter-sketch {
+  filter: url(#sketch-filter);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: 'DM Sans', system-ui, sans-serif;
+  background: var(--bg-main);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Canvas container — full bleed */
+#game-root {
+  position: fixed;
+  inset: 0;
+  cursor: none;
+  touch-action: none;
+}
+
+#game-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--bg-main);
+}
+
+/* UI overlay — score & shop; game gets mouse, but these elements stay clickable */
+.ui-overlay {
+  position: fixed;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.ui-overlay * {
+  pointer-events: auto;
+}
+
+/* Music bar — top center */
+.music-bar {
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 15;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  background: var(--bg-panel);
+  border: 2px solid var(--outline);
+  border-top: none;
+  border-radius: 0 0 var(--radius-panel);
+  box-shadow: 2px 3px 0 var(--outline-soft);
+  filter: url(#sketch-filter);
+  cursor: pointer;
+}
+
+.music-bar-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text);
+  min-width: 100px;
+}
+
+.music-bar-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.music-bar-btn {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--concrete-light);
+  border: 2px solid var(--outline);
+  border-radius: var(--radius-btn);
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background var(--transition-ui), transform 0.15s var(--ease-soft);
+}
+
+.music-bar-btn:hover {
+  background: var(--concrete);
+  transform: scale(1.05);
+}
+
+.music-bar-btn-play {
+  width: 40px;
+  height: 40px;
+  font-size: 1.1rem;
+  background: var(--brick-soft);
+}
+
+.music-bar-btn-play:hover {
+  background: var(--brick);
+}
+
+.music-bar-track-info {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.music-bar-error {
+  font-size: 0.7rem;
+  color: #b87d6a;
+  margin-left: 4px;
+}
+
+/* Ensure interactive overlay elements receive clicks */
+.score-card,
+.shop-btn,
+.music-bar,
+.shop-backdrop,
+.shop-panel,
+.shop-panel button,
+.shop-close {
+  pointer-events: auto;
+}
+
+/* Score display — top left, sketchy card */
+.score-card {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  padding: 10px 16px;
+  background: var(--bg-panel);
+  border: 2px solid var(--outline);
+  border-radius: var(--radius-panel);
+  box-shadow: 2px 3px 0 var(--outline-soft);
+  transition: transform var(--transition-ui);
+  filter: url(#sketch-filter);
+}
+
+.score-card:hover {
+  transform: translateY(-1px);
+}
+
+.score-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+.score-value {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--currency);
+}
+
+/* Shop button — top right */
+.shop-btn {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  padding: 10px 18px;
+  background: var(--brick-soft);
+  color: var(--outline);
+  border: 2px solid var(--outline);
+  border-radius: var(--radius-btn);
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background var(--transition-ui), transform var(--transition-ui);
+  box-shadow: 2px 2px 0 var(--outline-soft);
+}
+
+.shop-btn:hover {
+  background: var(--brick);
+  transform: translateY(-1px);
+}
+
+.shop-btn:active {
+  transform: translateY(0);
+  box-shadow: 1px 1px 0 var(--outline-soft);
+}
+
+/* Shop panel — slide-in modal */
+.shop-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(42, 37, 34, 0.4);
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.3s var(--ease-cozy);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.shop-panel {
+  background: var(--bg-panel);
+  border: 2px solid var(--outline);
+  border-radius: var(--radius-panel);
+  padding: 24px;
+  max-width: 360px;
+  width: 90%;
+  box-shadow: 4px 6px 0 var(--outline-soft);
+  animation: slideUp 0.35s var(--ease-cozy);
+  filter: url(#sketch-filter);
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.shop-panel h2 {
+  margin: 0 0 20px;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--outline);
+}
+
+.shop-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--concrete-light);
+  gap: 12px;
+}
+
+.shop-item:last-child {
+  border-bottom: none;
+}
+
+.shop-item-info strong {
+  display: block;
+  font-size: 0.95rem;
+}
+
+.shop-item-info span {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.shop-item-action {
+  padding: 8px 14px;
+  background: var(--currency);
+  color: var(--bg-main);
+  border: 2px solid var(--outline);
+  border-radius: var(--radius-btn);
+  font-family: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: filter var(--transition-ui), transform 0.15s var(--ease-soft);
+}
+
+.shop-item-action:hover:not(:disabled) {
+  filter: brightness(1.1);
+  transform: scale(1.02);
+}
+
+.shop-item-action:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.shop-close {
+  margin-top: 16px;
+  width: 100%;
+  padding: 10px;
+  background: var(--concrete-light);
+  border: 2px solid var(--outline);
+  border-radius: var(--radius-btn);
+  font-family: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--transition-ui);
+}
+
+.shop-close:hover {
+  background: var(--concrete);
+}
